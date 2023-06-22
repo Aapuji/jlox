@@ -1,0 +1,4 @@
+print "Hello World";
+outside-comment: /* same line
+  next line * hi . /;
+last line*/hi;
