@@ -6,6 +6,12 @@
   "configurations": [
     {
       "type": "java",
+      "name": "Run Lox REPL",
+      "request": "launch",
+      "mainClass": "lox.Lox"
+    },
+    {
+      "type": "java",
       "name": "Test AST Printer",
       "request": "launch",
       "mainClass": "lox.AstPrinter"
@@ -22,11 +28,12 @@
       "name": "Run Lox",
       "request": "launch",
       "mainClass": "lox.Lox",
-      "projectName": "jlox_cf36d16b"
+      "projectName": "jlox_cf36d16b",
+      "args": "${command:SpecifyProgramArgs}"
     },
     {
       "type": "java",
-      "name": "Run Lox  with Arguments Prompt",
+      "name": "Run Lox with Arguments Prompt",
       "request": "launch",
       "mainClass": "lox.Lox",
       "args": "${command:SpecifyProgramArgs}"

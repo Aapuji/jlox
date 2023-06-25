@@ -1,4 +1,1 @@
-print "Hello World";
-outside-comment: /* same line
-  next line * hi . /;
-last line*/hi;
+24 <= 1 + 2 + 5 / (3 - 4) * 88 == 64 != 1 / (2 + 4 * 6) + 8 + 9 + 10
