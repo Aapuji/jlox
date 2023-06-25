@@ -11,8 +11,16 @@ class Parser {
   private final List<Token> tokens;
   private int current = 0;
 
-  Parser(List<Token> tokens) {
+  public Parser(List<Token> tokens) {
     this.tokens = tokens;
+  }
+
+  public Expr parse() {
+    try {
+      return expression();
+    } catch (ParseError error) {
+      return null;
+    }
   }
 
   private Expr expression() {
@@ -48,8 +56,8 @@ class Parser {
 
     while (match(MINUS, PLUS)) {
       Token operator = previous();
-      Expr right = factor();
-      expr new Expr.Binary(expr, operator, right);
+      Expr right = term();
+      return new Expr.Binary(expr, operator, right);
     }
 
     return expr;
@@ -88,9 +96,11 @@ class Parser {
 
     if (match(LEFT_PAREN)) {
       Expr expr = expression();
-      consume(RIGHT_PAREN, "Expect ')' after expression.");
+      consume(RIGHT_PAREN, "Expected ')' after expression.");
       return new Expr.Grouping(expr);
     }
+
+    throw error(peek(), "Expected expression.");
   }
 
   private boolean match(TokenType... types) {
