@@ -1,5 +1,6 @@
 package lox;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static lox.TokenType.*;
@@ -15,16 +16,41 @@ class Parser {
     this.tokens = tokens;
   }
 
-  public Expr parse() {
+  public List<Stmt> parse() {
+    List<Stmt> statements = new ArrayList<>();    
     try {
-      return expression();
-    } catch (ParseError error) {
-      return null;
+      while (!isAtEnd()) {
+        statements.add(statement());
+      }
+    } catch (RuntimeException err) { // This catches the error, but `RuntimeError err` will not, and a Java error will be outputted.
+      System.out.println(err);
     }
+
+    return statements;
   }
 
   private Expr expression() {
     return equality();
+  }
+
+  private Stmt statement() {
+    if (match(PRINT)) return printStatement();
+
+    return expressionStatement();
+  }
+
+  private Stmt printStatement() {
+    Expr value = expression();
+    consume(SEMICOLON, "Expected ';' after value.");
+
+    return new Stmt.Print(value);
+  }
+
+  private Stmt expressionStatement() {
+    Expr expr = expression();
+    consume(SEMICOLON, "Expected ';' after expression.");
+
+    return new Stmt.Expression(expr);
   }
 
   private Expr equality() {
