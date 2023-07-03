@@ -13,6 +13,11 @@ public class Lox {
   public static boolean hadError = false;
   public static boolean hadRuntimeError = false;
 
+  public static enum Mode {
+    File,
+    Repl
+  };
+
   public static void main(String[] args) throws IOException {
     if (args.length > 1) {
       System.out.println("Usage: jlox [script]");
@@ -42,16 +47,20 @@ public class Lox {
       System.out.print("> ");
       String line = reader.readLine();
       if (line == null) break;
-      run(line);
+      run(line, Mode.Repl);
       hadError = false;
       // hadRuntimeError = false;
     }
   }
 
   private static void run(String source) {
+    run(source, Mode.File);
+  }
+
+  private static void run(String source, Mode mode) {
     Scanner scanner = new Scanner(source);
     List<Token> tokens = scanner.scanTokens();
-    Parser parser = new Parser(tokens);
+    Parser parser = new Parser(tokens, mode);
     List<Stmt> statements = parser.parse();
 
     // Stop if there was a syntax error.

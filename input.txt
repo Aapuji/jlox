@@ -1,4 +1,5 @@
-print "one";
-print true;
-print 2 + 1;
-print -1 < 4;
+var a = 1;
+{
+  var a = a + 2;
+  print a;
+}

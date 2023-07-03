@@ -33,13 +33,6 @@
     },
     {
       "type": "java",
-      "name": "Run Lox with Arguments Prompt",
-      "request": "launch",
-      "mainClass": "lox.Lox",
-      "args": "${command:SpecifyProgramArgs}"
-    },
-    {
-      "type": "java",
       "name": "Current File",
       "request": "launch",
       "mainClass": "${file}"

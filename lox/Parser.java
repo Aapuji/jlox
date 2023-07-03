@@ -8,19 +8,26 @@ import static lox.TokenType.*;
 // Recursive Descent Parser
 class Parser {
   private static class ParseError extends RuntimeException {};
+  private static Lox.Mode executionMode;
 
   private final List<Token> tokens;
   private int current = 0;
 
   public Parser(List<Token> tokens) {
     this.tokens = tokens;
+    this.executionMode = Lox.Mode.File;
+  }
+
+  public Parser(List<Token> tokens, Lox.Mode mode) {
+    this.tokens = tokens;
+    this.executionMode = mode;
   }
 
   public List<Stmt> parse() {
     List<Stmt> statements = new ArrayList<>();    
     try {
       while (!isAtEnd()) {
-        statements.add(statement());
+        statements.add(declaration());
       }
     } catch (RuntimeException err) { // This catches the error, but `RuntimeError err` will not, and a Java error will be outputted.
       System.out.println(err);
@@ -30,13 +37,37 @@ class Parser {
   }
 
   private Expr expression() {
-    return equality();
+    return assignment();
+  }
+
+  private Stmt declaration() {
+    try {
+      if (match(VAR)) return varDeclaration();
+
+      return statement();
+    } catch (ParseError error) {
+      synchronize();
+
+      return null;
+    }
   }
 
   private Stmt statement() {
     if (match(PRINT)) return printStatement();
+    if (match(LEFT_BRACE)) return new Stmt.Block(block());
 
     return expressionStatement();
+  }
+
+  private List<Stmt> block() {
+    List<Stmt> statements = new ArrayList<>();
+
+    while (!check(RIGHT_BRACE) && !isAtEnd()) {
+      statements.add(declaration());
+    }
+
+    consume(RIGHT_BRACE, "Expected '}' after block.");
+    return statements;
   }
 
   private Stmt printStatement() {
@@ -46,11 +77,48 @@ class Parser {
     return new Stmt.Print(value);
   }
 
+  private Stmt varDeclaration() {
+    Token name = consume(IDENTIFIER, "Expected variable name.");
+
+    Expr initializer = null;
+    if (match(EQUAL)) {
+      initializer = expression();
+    }
+
+    consume(SEMICOLON, "Expected ';' after variable declaration.");
+    return new Stmt.Var(name, initializer);
+  }
+
   private Stmt expressionStatement() {
     Expr expr = expression();
-    consume(SEMICOLON, "Expected ';' after expression.");
+    
+    if (executionMode == Lox.Mode.Repl) {
+      if (!match(SEMICOLON)) {
+        return new Stmt.Print(expr); // Add an implicit "print" before the expression when in REPL.
+      }
+    } else {
+      consume(SEMICOLON, "Expected ';' after expression.");
+    }
 
     return new Stmt.Expression(expr);
+  }
+
+  private Expr assignment() {
+    Expr expr = equality();
+
+    if (match(EQUAL)) {
+      Token equals = previous();
+      Expr value = assignment();
+
+      if (expr instanceof Expr.Variable) {
+        Token name = ((Expr.Variable) expr).name;
+        return new Expr.Assign(name, value);
+      }
+
+      error(equals, "Invalid assignment target.");
+    }
+
+    return expr;
   }
 
   private Expr equality() {
@@ -118,6 +186,10 @@ class Parser {
 
     if (match(NUMBER, STRING)) {
       return new Expr.Literal(previous().literal);
+    }
+
+    if (match(IDENTIFIER)) {
+      return new Expr.Variable(previous());
     }
 
     if (match(LEFT_PAREN)) {
