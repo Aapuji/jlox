@@ -6,29 +6,17 @@
   "configurations": [
     {
       "type": "java",
-      "name": "Run Lox REPL",
+      "name": "Run Lox",
       "request": "launch",
-      "mainClass": "lox.Lox"
-    },
-    {
-      "type": "java",
-      "name": "Test AST Printer",
-      "request": "launch",
-      "mainClass": "lox.AstPrinter"
+      "mainClass": "lox.Lox",
+      "projectName": "jlox_cf36d16b",
+      "args": "${command:SpecifyProgramArgs}"
     },
     {
       "type": "java",
       "name": "Generate AST Classes",
       "request": "launch",
       "mainClass": "tool.GenerateAst",
-      "args": "${command:SpecifyProgramArgs}"
-    },
-    {
-      "type": "java",
-      "name": "Run Lox",
-      "request": "launch",
-      "mainClass": "lox.Lox",
-      "projectName": "jlox_cf36d16b",
       "args": "${command:SpecifyProgramArgs}"
     },
     {
