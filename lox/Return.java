@@ -1,10 +1,10 @@
 package lox;
 
-public class Return extends RuntimeException {
-  final Object value;
+public class Return extends UnwindAst {
+  public final Object value;
   
-  public Return(Object value) {
-    super(null, null, false, false);
+  public Return(Token token, Object value) {
+    super(token);
     this.value = value;
   }
 }

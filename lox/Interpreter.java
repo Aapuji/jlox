@@ -6,6 +6,7 @@ import java.util.List;
 class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
   public final Environment globals = new Environment();
   private Environment environment = globals;
+  private int loopDepth = 0;
 
   public Interpreter() {
     globals.define("clock", new LoxCallable() {
@@ -29,6 +30,14 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
       }
     } catch (RuntimeError error) {
       Lox.runtimeError(error);
+    } catch (UnwindAst unwound) {
+      if (unwound instanceof Return) {
+        Lox.runtimeError(new RuntimeError(unwound.token, "Return statements must be within a function."));
+      }
+      
+      if (unwound instanceof Break) {
+        Lox.runtimeError(new RuntimeError(unwound.token, "Break statements must be within a loop."));
+      }
     }
   }
   
@@ -57,6 +66,11 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
   public Void visitBlockStmt(Stmt.Block stmt) {
     executeBlock(stmt.statements, new Environment(environment));
     return null;
+  }
+
+  @Override
+  public Void visitBreakStmt(Stmt.Break stmt) {
+    throw new Break(stmt.keyword);
   }
 
   @Override
@@ -96,7 +110,7 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
     Object value = null;
     if (stmt.value != null) value = evaluate(stmt.value);
 
-    throw new Return(value);
+    throw new Return(stmt.keyword, value);
   }
 
   @Override
@@ -112,8 +126,13 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 
   @Override
   public Void visitWhileStmt(Stmt.While stmt) {
+    loopDepth++;
     while (isTruthy(evaluate(stmt.condition))) {
-      execute(stmt.body);
+      try {
+        execute(stmt.body);
+      } catch (Break breakStmt) {
+        break;
+      }
     }
 
     return null;

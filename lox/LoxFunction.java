@@ -32,8 +32,14 @@ public class LoxFunction implements LoxCallable {
 
     try {
       interpreter.executeBlock(declaration.body, environment); // Executed code
-    } catch (Return returnValue) { // Returns from function.
-      return returnValue.value;
+    } catch (UnwindAst unwound) { // Returns from function.
+      if (unwound instanceof Return) {  
+        return ((Return) unwound).value;
+      }
+
+      if (unwound instanceof Break) {
+        Lox.runtimeError(new RuntimeError(unwound.token, "Break statements must be within a loop."));
+      }
     }
 
     return null;

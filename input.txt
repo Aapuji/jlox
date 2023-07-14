@@ -1,14 +1,17 @@
-fun makeCounter() {
-  var i = 0;
+fun printNums() {
+  var x = 0;
 
-  fun count() {
-    i = i + 1;
+  for (var i = 0; i < 10; i = i + 1) {
+    x = x + i;
     print i;
-  }
 
-  return count;
+    if (i == 5) {
+      print "at 5";
+      continue;
+    }
+
+    if (i == 6) return x;
+  }
 }
 
-var counter = makeCounter();
-counter();
-counter();
+print printNums();

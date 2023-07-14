@@ -52,6 +52,7 @@ class Parser {
   }
 
   private Stmt statement() {
+    if (match(BREAK)) return breakStatement();
     if (match(FOR)) return forStatement();
     if (match(IF)) return ifStatement();
     if (match(PRINT)) return printStatement();
@@ -60,6 +61,13 @@ class Parser {
     if (match(LEFT_BRACE)) return new Stmt.Block(block());
 
     return expressionStatement();
+  }
+
+  private Stmt breakStatement() {
+    Token keyword = previous();
+    consume(SEMICOLON, "Expected ';' after break statement.");
+
+    return new Stmt.Break(keyword);
   }
 
   private Stmt forStatement() {
