@@ -1,17 +1,6 @@
-fun printNums() {
-  var x = 0;
+for (var i = 0; i < 10; i = i + 1) {
+  print i;
 
-  for (var i = 0; i < 10; i = i + 1) {
-    x = x + i;
-    print i;
-
-    if (i == 5) {
-      print "at 5";
-      continue;
-    }
-
-    if (i == 6) return x;
-  }
+  if (i == 5)
+    break;
 }
-
-print printNums();
