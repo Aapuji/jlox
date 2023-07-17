@@ -51,6 +51,41 @@ class Parser {
     }
   }
 
+  private Stmt.Function function(String kind) {
+    Token name = consume(IDENTIFIER, "Expected " + kind + " name.");
+    consume(LEFT_PAREN, "Expected '(' after " + kind + " name.");
+
+    List<Token> parameters = new ArrayList<>();
+    if (!check(RIGHT_PAREN)) {
+      do {
+        if (parameters.size() >= MAX_ARGS) {
+          error(peek(), "Can't have more than " + MAX_ARGS + " parameters.");
+        }
+
+        parameters.add(
+          consume(IDENTIFIER, "Expected parameter name.")
+        );
+      } while (match(COMMA));
+    }
+    consume(RIGHT_PAREN, "Expected ')' after parameters.");
+
+    consume(LEFT_BRACE, "Expected '{' before " + kind + " body.");
+    List<Stmt> body = block();
+    return new Stmt.Function(name, parameters, body);
+  }
+
+  private Stmt varDeclaration() {
+    Token name = consume(IDENTIFIER, "Expected variable name.");
+
+    Expr initializer = null;
+    if (match(EQUAL)) {
+      initializer = expression();
+    }
+
+    consume(SEMICOLON, "Expected ';' after variable declaration.");
+    return new Stmt.Var(name, initializer);
+  }
+
   private Stmt statement() {
     if (match(BREAK)) return breakStatement();
     if (match(FOR)) return forStatement();
@@ -162,18 +197,6 @@ class Parser {
     return new Stmt.Return(keyword, value);
   }
 
-  private Stmt varDeclaration() {
-    Token name = consume(IDENTIFIER, "Expected variable name.");
-
-    Expr initializer = null;
-    if (match(EQUAL)) {
-      initializer = expression();
-    }
-
-    consume(SEMICOLON, "Expected ';' after variable declaration.");
-    return new Stmt.Var(name, initializer);
-  }
-
   private Stmt whileStatement() {
     consume(LEFT_PAREN, "Expected '(' after 'while'.");
 
@@ -197,29 +220,6 @@ class Parser {
     }
 
     return new Stmt.Expression(expr);
-  }
-
-  private Stmt.Function function(String kind) {
-    Token name = consume(IDENTIFIER, "Expected " + kind + " name.");
-    consume(LEFT_PAREN, "Expected '(' after " + kind + " name.");
-
-    List<Token> parameters = new ArrayList<>();
-    if (!check(RIGHT_PAREN)) {
-      do {
-        if (parameters.size() >= MAX_ARGS) {
-          error(peek(), "Can't have more than " + MAX_ARGS + " parameters.");
-        }
-
-        parameters.add(
-          consume(IDENTIFIER, "Expected parameter name.")
-        );
-      } while (match(COMMA));
-    }
-    consume(RIGHT_PAREN, "Expected ')' after parameters.");
-
-    consume(LEFT_BRACE, "Expected '{' before " + kind + " body.");
-    List<Stmt> body = block();
-    return new Stmt.Function(name, parameters, body);
   }
 
   private Expr expression() {
