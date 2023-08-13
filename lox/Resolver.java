@@ -159,7 +159,7 @@ public class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
 
   private void resolve(Stmt stmt) {
     stmt.accept(this);
-  }
+  } 
 
   private void resolve(Expr expr) {
     expr.accept(this);
@@ -199,7 +199,12 @@ public class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
   private void declare(Token name) {
     if (scopes.isEmpty()) return;
 
-    scopes.peek().put(name.lexeme, false); // Not finished resolving variable.
+    Map<String, Boolean> scope = scopes.peek();
+    if (scope.containsKey(name.lexeme)) {
+      Lox.error(name, "Variable with this name already exists within this scope.");
+    }
+    
+    scope.put(name.lexeme, false); // Not finished resolving variable.
   }
 
   // Once variable is ready, `define` marks that it is available for use.

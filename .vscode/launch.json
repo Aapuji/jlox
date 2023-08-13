@@ -10,20 +10,23 @@
       "request": "launch",
       "mainClass": "lox.Lox",
       "projectName": "jlox_cf36d16b",
-      "args": "${command:SpecifyProgramArgs}"
+      "args": "${command:SpecifyProgramArgs}",
+      "console": "externalTerminal"
     },
     {
       "type": "java",
       "name": "Generate AST Classes",
       "request": "launch",
       "mainClass": "tool.GenerateAst",
-      "args": "${command:SpecifyProgramArgs}"
+      "args": "${command:SpecifyProgramArgs}",
+      "console": "externalTerminal"
     },
     {
       "type": "java",
       "name": "Current File",
       "request": "launch",
-      "mainClass": "${file}"
+      "mainClass": "${file}",
+      "console": "externalTerminal"
     }
   ]
 }
