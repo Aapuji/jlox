@@ -8,9 +8,21 @@ import java.util.Stack;
 public class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
   private final Interpreter interpreter;
   private final Stack<Map<String, Boolean>> scopes = new Stack<>();
+  private FunctionType currentFunction = FunctionType.NONE;
+  private LoopType currentLoop = LoopType.NONE;
 
   public Resolver(Interpreter interpreter) {
     this.interpreter = interpreter;
+  }
+
+  private enum FunctionType {
+    NONE,
+    FUNCTION
+  }
+
+  private enum LoopType {
+    NONE,
+    LOOP
   }
 
   public void resolve(List<Stmt> statements) {
@@ -30,6 +42,9 @@ public class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
 
   @Override
   public Void visitBreakStmt(Stmt.Break stmt) {
+    if (currentLoop == LoopType.NONE) {
+      Lox.error(stmt.keyword, "Can't break from outside a loop.");
+    }
     return null;
   }
 
@@ -57,6 +72,9 @@ public class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
 
   @Override
   public Void visitReturnStmt(Stmt.Return stmt) {
+    if (currentFunction == FunctionType.NONE) {
+      Lox.error(stmt.keyword, "Can't return from outside a function.");
+    }
     if (stmt.value != null) {
       resolve(stmt.value);
     }
@@ -66,8 +84,13 @@ public class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
 
   @Override
   public Void visitWhileStmt(Stmt.While stmt) {
+    LoopType enclosingLoop = currentLoop;
+    currentLoop = LoopType.LOOP;
+
     resolve(stmt.condition);
     resolve(stmt.body);
+
+    currentLoop = enclosingLoop;
 
     return null;
   }
@@ -77,7 +100,7 @@ public class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
     declare(stmt.name);
     define(stmt.name); // Function is defined eagerly, so that it can be recursive.
 
-    resolveFunction(stmt);
+    resolveFunction(stmt, FunctionType.FUNCTION);
     return null;
   }
 
@@ -175,7 +198,10 @@ public class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
     }
   }
 
-  private void resolveFunction(Stmt.Function function) {
+  private void resolveFunction(Stmt.Function function, FunctionType type) {
+    FunctionType enclosingFunction = currentFunction;
+    currentFunction = type;
+
     beginScope();
 
     for (Token param : function.params) {
@@ -185,6 +211,7 @@ public class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
 
     resolve(function.body);
     endScope();
+    currentFunction = enclosingFunction;
   }
 
   private void beginScope() {

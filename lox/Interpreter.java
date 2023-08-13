@@ -32,14 +32,6 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
       }
     } catch (RuntimeError error) {
       Lox.runtimeError(error);
-    } catch (UnwindAst unwound) {
-      if (unwound instanceof Return) {
-        Lox.runtimeError(new RuntimeError(unwound.token, "Return statements must be within a function."));
-      }
-      
-      if (unwound instanceof Break) {
-        Lox.runtimeError(new RuntimeError(unwound.token, "Break statements must be within a loop."));
-      }
     }
   }
   
