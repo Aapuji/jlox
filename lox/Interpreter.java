@@ -72,6 +72,16 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
   }
 
   @Override
+  public Void visitClassStmt(Stmt.Class stmt) {
+    environment.define(stmt.name.lexeme, null); // Declare class name
+    LoxClass loxClass = new LoxClass(stmt.name.lexeme);
+    environment.assign(stmt.name, loxClass); // Store class object in the variable
+    // Two stage variable binding process allows for self-referencing.
+
+    return null;
+  }
+
+  @Override
   public Void visitExpressionStmt(Stmt.Expression stmt) {
     evaluate(stmt.expression);
     return null;
@@ -212,6 +222,16 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
       throw new RuntimeError(expr.paren, "Expected " + function.arity() + " arguments, but got " + arguments.size() + ".");
     }
     return function.call(this, arguments);
+  }
+
+  @Override
+  public Object visitGetExpr(Expr.Get expr) {
+    Object object = evaluate(expr.object);
+    if (object instanceof LoxInstance) {
+      return ((LoxInstance) object).get(expr.name);
+    }
+
+    throw new RuntimeError(expr.name, "Can only access properties on class instances.");
   }
 
   @Override

@@ -40,6 +40,7 @@ class Parser {
 
   private Stmt declaration() {
     try {
+      if (match(CLASS)) return classDeclaration();
       if (match(FUN)) return function("function");
       if (match(VAR)) return varDeclaration();
 
@@ -49,6 +50,20 @@ class Parser {
 
       return null;
     }
+  }
+
+  private Stmt classDeclaration() {
+    Token name = consume(IDENTIFIER, "Expected class name.");
+    consume(LEFT_BRACE, "Expected '{' before class body.");
+
+    List<Stmt.Function> methods = new ArrayList<>();
+    while (!check(RIGHT_BRACE) && !isAtEnd()) {
+      methods.add(function("method"));
+    }
+
+    consume(RIGHT_BRACE, "Expected '}' after class body.");
+
+    return new Stmt.Class(name, methods);
   }
 
   private Stmt.Function function(String kind) {
@@ -326,6 +341,23 @@ class Parser {
     return call();
   }
 
+  private Expr call() {
+    Expr expr = primary();
+
+    while (true) {
+      if (match(LEFT_PAREN)) {
+        expr = finishCall(expr);
+      } else if (match(DOT)) {
+        Token name = consume(IDENTIFIER, "Expected property name after '.'.");
+        expr = new Expr.Get(expr, name);
+      } else {
+        break;
+      }
+    }
+
+    return expr;
+  }
+
   private Expr finishCall(Expr callee) {
     List<Expr> arguments = new ArrayList<>();
 
@@ -341,20 +373,6 @@ class Parser {
     Token paren = consume(RIGHT_PAREN, "Expected ')' after arguments.");
 
     return new Expr.Call(callee, paren, arguments);
-  }
-
-  private Expr call() {
-    Expr expr = primary();
-
-    while (true) {
-      if (match(LEFT_PAREN)) {
-        expr = finishCall(expr);
-      } else {
-        break;
-      }
-    }
-
-    return expr;
   }
 
   private Expr primary() {
