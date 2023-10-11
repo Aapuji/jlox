@@ -1,8 +1,8 @@
-for (var i = 0; i < 10; i = i + 1) {
-  print i;
+class Bagel {}
 
-  if (i == 5)
-    break;
-}
+print Bagel;
 
-break;
+var bagel = Bagel();
+print bagel;
+
+bagel.hello
